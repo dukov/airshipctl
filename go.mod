@@ -22,8 +22,11 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
+	k8s.io/api v0.0.0
 	k8s.io/apimachinery v0.0.0
+	k8s.io/cli-runtime v0.0.0
 	k8s.io/client-go v11.0.0+incompatible
+	k8s.io/kubectl v0.0.0
 	k8s.io/kubernetes v1.16.3
 	sigs.k8s.io/kustomize/v3 v3.2.0
 	sigs.k8s.io/yaml v1.1.0
