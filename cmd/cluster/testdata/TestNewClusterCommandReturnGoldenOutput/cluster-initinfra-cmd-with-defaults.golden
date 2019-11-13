@@ -1,0 +1,16 @@
+
+		Deploy base infrastructure to kubernetes cluster
+
+Usage:
+  initinfra [flags]
+
+Examples:
+
+		# deploy infra to cluster
+		airshipctl cluster initinfra
+
+Flags:
+      --dry-run   Don't deliver infra to the cluster, see the changes instead
+  -h, --help      help for initinfra
+      --prune     If set to true, command will delete all kubernetes resources that are not
+                  		defined in airship documents and have airshipit.org/deployed=initinfra label

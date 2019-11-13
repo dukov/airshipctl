@@ -1,0 +1,11 @@
+apiVersion: airshipit.org/v1alpha1
+clusters:
+  kubernetes:
+    cluster-type: {}
+contexts: {}
+current-context: ""
+kind: Config
+manifests: {}
+modules-config:
+  dummy-for-tests: ""
+users: {}
