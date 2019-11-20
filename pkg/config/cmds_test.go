@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidate(t *testing.T) {
+func TestValidateCluster(t *testing.T) {
 	co := DummyClusterOptions()
 
 	// Assert that the initial dummy config is valid
@@ -57,6 +57,23 @@ func TestValidate(t *testing.T) {
 	assert.Error(t, err)
 
 	// Empty Cluster Name case
+	co.Name = ""
+	err = co.Validate()
+	assert.Error(t, err)
+}
+
+func TestValidateContext(t *testing.T) {
+	co := DummyContextOptions()
+	// Valid Data case
+	err := co.Validate()
+	assert.NoError(t, err)
+
+	// Invalid Cluter Type
+	co.ClusterType = "Invalid"
+	err = co.Validate()
+	assert.Error(t, err)
+	// Empty Name
+	co.ClusterType = Target
 	co.Name = ""
 	err = co.Validate()
 	assert.Error(t, err)

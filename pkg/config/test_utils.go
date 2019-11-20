@@ -144,6 +144,18 @@ func DummyClusterOptions() *ClusterOptions {
 	return co
 }
 
+func DummyContextOptions() *ContextOptions {
+	co := &ContextOptions{}
+	co.Name = "dummy_context"
+	co.ClusterType = Ephemeral
+	co.Manifest = "dummy_manifest"
+	co.AuthInfo = "dummy_user"
+	co.CurrentContext = false
+	co.Namespace = "dummy_namespace"
+
+	return co
+}
+
 const (
 	testConfigYAML = `apiVersion: airshipit.org/v1alpha1
 clusters:
