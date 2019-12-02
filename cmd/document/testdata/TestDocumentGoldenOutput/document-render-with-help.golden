@@ -1,0 +1,12 @@
+Render documents from model
+
+Usage:
+  render [flags]
+
+Flags:
+  -a, --annotation string   Annotation for document filtering
+  -g, --group string        Group for document filtering
+  -h, --help                help for render
+  -k, --kind string         Kind for document filtering
+  -l, --label string        Label for document filtering
+  -v, --version string      Version for document filtering
