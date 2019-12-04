@@ -60,6 +60,12 @@ func DummyContext() *Context {
 	c := NewContext()
 	c.NameInKubeconf = "dummy_cluster"
 	c.Manifest = "dummy_manifest"
+	context := kubeconfig.NewContext()
+	context.Namespace = "dummy_namespace"
+	context.AuthInfo = "dummy_user"
+	context.Cluster = "dummycluster_ephemeral"
+	c.SetKubeContext(context)
+
 	return c
 }
 

@@ -232,11 +232,6 @@ func TestPurge(t *testing.T) {
 	assert.Falsef(t, os.IsExist(err), "Purge failed to remove file at %v", config.LoadedConfigPath())
 }
 
-func TestClusterNames(t *testing.T) {
-	conf := InitConfig(t)
-	expected := []string{"def", "onlyinkubeconf", "wrongonlyinconfig", "wrongonlyinkubeconf"}
-	assert.EqualValues(t, expected, conf.ClusterNames())
-}
 func TestKClusterString(t *testing.T) {
 	conf := InitConfig(t)
 	kClusters := conf.KubeConfig().Clusters
