@@ -80,8 +80,7 @@ func DummyCluster() *Cluster {
 // DummyManifest , utility function used for tests
 func DummyManifest() *Manifest {
 	m := NewManifest()
-	// Repositories is the map of repository adddressable by a name
-	m.Repositories["dummy"] = DummyRepository()
+	m.Repository = DummyRepository()
 	m.TargetPath = "/var/tmp/"
 	return m
 }

@@ -113,11 +113,13 @@ type AuthInfo struct {
 	// Will implement Interface to Set/Get fields from kubeconfig as needed
 }
 
-// Manifests is a tuple of references to a Manifest (how do Identify, collect ,
+// Manifest is a tuple of references to a Manifest (how do Identify, collect ,
 // find the yaml manifests that airship uses to perform its operations)
 type Manifest struct {
-	// Repositories is the map of repository adddressable by a name
-	Repositories map[string]*Repository `json:"repositories"`
+	// Repository is the main repository that holds documents for manifest
+	Repository *Repository `json:"repository"`
+	// ExtraRepositories is the map of extra repositories addressable by a name
+	ExtraRepositories map[string]*Repository `json:"extra-repositories,omitempty"`
 
 	// Local Targer path for working or home dirctory for all Manifest Cloned/Returned/Generated
 	TargetPath string `json:"target-path"`
