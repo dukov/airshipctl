@@ -582,8 +582,9 @@ func (m *Manifest) Equal(n *Manifest) bool {
 	if n == nil {
 		return n == m
 	}
-	repositoryEq := reflect.DeepEqual(m.Repositories, n.Repositories)
-	return repositoryEq && m.TargetPath == n.TargetPath
+	repositoryEq := reflect.DeepEqual(m.Repository, n.Repository)
+	extraReposEq := reflect.DeepEqual(m.ExtraRepositories, n.ExtraRepositories)
+	return repositoryEq && extraReposEq && m.TargetPath == n.TargetPath
 }
 
 func (m *Manifest) String() string {
