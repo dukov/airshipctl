@@ -1,0 +1,3 @@
+resources:
+ - baremetal.yaml
+ - tiller.yaml

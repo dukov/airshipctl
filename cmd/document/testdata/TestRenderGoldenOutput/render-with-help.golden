@@ -1,0 +1,27 @@
+Render documents from model
+
+Usage:
+  render [flags]
+
+Examples:
+
+#Get all documents containing labels "app=helm" and "service=tiller"
+airshipctl document render -l app=helm -l service=armada
+
+#Same with raw filter
+airshipctl document render -f 'metadata.labels.app == "helm" && metadata.labels.service == "armada"'
+
+#Get documents with particular value in cirtain filed referenced
+#by JSON path 'spec.template.spec.image'
+airshipctl document render -f 'spec.template.spec.image == "ubuntu:xenial"'
+
+#Get all Secrets or ConfigMaps
+airshipctl document render -f 'kind == "Secret" || kind == "ConfigMap"'
+
+Flags:
+  -a, --annotation stringArray   Filter documents by Annotations
+  -g, --apiversion stringArray   Filter documents by API version
+  -f, --filter string            Logical expression for document filtering
+  -h, --help                     help for render
+  -k, --kind stringArray         Filter documents by Kinds
+  -l, --label stringArray        Filter documents by Labels

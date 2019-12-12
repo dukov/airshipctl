@@ -1,0 +1,456 @@
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  annotations:
+    airshipit.org/clustertype: ephemeral
+  name: master-0
+spec:
+  bmc:
+    address: ipmi://192.168.111.1:6230
+    credentialsName: master-0-bmc-secret
+  bootMACAddress: 00:3b:8b:0c:ec:8b
+  online: true
+...
+---
+apiVersion: v1
+data:
+  password: cGFzc3dvcmQ=
+  username: YWRtaW4=
+kind: Secret
+metadata:
+  annotations:
+    airshipit.org/clustertype: ephemeral
+  name: master-0-bmc-secret
+type: Opaque
+...
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  name: master-1
+spec:
+  bmc:
+    address: ipmi://192.168.111.2:6230
+    credentialsName: master-1-bmc-secret
+  bootMACAddress: 01:3b:8b:0c:ec:8b
+  online: true
+...
+---
+apiVersion: v1
+data:
+  password: cGFzc3dvcmQ=
+  username: YWRtaW4=
+kind: Secret
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  name: master-1-bmc-secret
+type: Opaque
+...
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    airshipit.org/clustertype: ephemeral
+  creationTimestamp: null
+  labels:
+    app: helm
+    name: tiller
+  name: tiller-deploy
+  namespace: kube-system
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: helm
+        name: tiller
+    spec:
+      automountServiceAccountToken: true
+      containers:
+      - env:
+        - name: TILLER_NAMESPACE
+          value: kube-system
+        - name: TILLER_HISTORY_MAX
+          value: "0"
+        image: gcr.io/kubernetes-helm/tiller:v2.12.3
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: 44135
+          initialDelaySeconds: 1
+          timeoutSeconds: 1
+        name: tiller
+        ports:
+        - containerPort: 44134
+          name: tiller
+        - containerPort: 44135
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: 44135
+          initialDelaySeconds: 1
+          timeoutSeconds: 1
+        resources: {}
+status: {}
+...
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    airshipit.org/clustertype: ephemeral
+  creationTimestamp: null
+  labels:
+    app: helm
+    name: tiller
+  name: tiller-deploy
+  namespace: kube-system
+spec:
+  ports:
+  - name: tiller
+    port: 44134
+    targetPort: tiller
+  selector:
+    app: helm
+    name: tiller
+  type: ClusterIP
+status:
+  loadBalancer: {}
+...
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  airshipit.org/clustertype: target
+  annotations: null
+  name: workflows.argoproj.io
+spec:
+  group: argoproj.io
+  names:
+    kind: Workflow
+    plural: workflows
+    shortNames:
+    - wf
+  scope: Namespaced
+  version: v1alpha1
+...
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  name: argo-ui
+...
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  name: argo
+...
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+  name: argo-aggregate-to-admin
+rules:
+- apiGroups:
+  - argoproj.io
+  resources:
+  - workflows
+  - workflows/finalizers
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+...
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+  name: argo-aggregate-to-edit
+rules:
+- apiGroups:
+  - argoproj.io
+  resources:
+  - workflows
+  - workflows/finalizers
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+...
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+  name: argo-aggregate-to-view
+rules:
+- apiGroups:
+  - argoproj.io
+  resources:
+  - workflows
+  - workflows/finalizers
+  verbs:
+  - get
+  - list
+  - watch
+...
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  name: argo-cluster-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - pods/exec
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - create
+  - delete
+- apiGroups:
+  - argoproj.io
+  resources:
+  - workflows
+  - workflows/finalizers
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+...
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  name: argo-ui-cluster-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - pods/exec
+  - pods/log
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - argoproj.io
+  resources:
+  - workflows
+  verbs:
+  - get
+  - list
+  - watch
+...
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  name: argo-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argo-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: argo
+  namespace: argo
+...
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  name: argo-ui-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argo-ui-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: argo-ui
+  namespace: argo
+...
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  name: workflow-controller-configmap
+...
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  name: argo-ui
+spec:
+  ports:
+  - port: 80
+    targetPort: 8001
+  selector:
+    app: argo-ui
+...
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  name: argo-ui
+spec:
+  selector:
+    matchLabels:
+      app: argo-ui
+  template:
+    metadata:
+      labels:
+        app: argo-ui
+    spec:
+      containers:
+      - env:
+        - name: ARGO_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: IN_CLUSTER
+          value: "true"
+        - name: ENABLE_WEB_CONSOLE
+          value: "false"
+        - name: BASE_HREF
+          value: /
+        image: argoproj/argoui:v2.3.0
+        name: argo-ui
+      serviceAccountName: argo-ui
+...
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  labels:
+    app: workflow-controller
+  name: workflow-controller
+spec:
+  selector:
+    matchLabels:
+      app: workflow-controller
+  serviceAccountName: argo
+  template:
+    metadata:
+      labels:
+        app: workflow-controller
+    spec:
+      containers:
+      - args:
+        - --configmap
+        - workflow-controller-configmap
+        - --executor-image
+        - argoproj/argoexec:v2.3.0
+        command:
+        - workflow-controller
+        image: argoproj/workflow-controller:v2.3.0
+        name: workflow-controller
+...
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    airshipit.org/clustertype: target
+  name: some-random-deployment-we-will-filter
+  namespace: foobar
+spec:
+  selector:
+    matchLabels:
+      app: some-random-deployment-we-will-filter
+  serviceAccountName: something
+  template:
+    metadata:
+      labels:
+        app: some-random-deployment-we-will-filter
+    spec:
+      containers:
+      - args:
+        - foobar
+        command:
+        - somecommand
+        image: someimage
+        name: some-random-deployment-we-will-filter
+...
