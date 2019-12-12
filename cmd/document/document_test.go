@@ -14,11 +14,6 @@ func TestDocument(t *testing.T) {
 			CmdLine: "",
 			Cmd:     document.NewDocumentCommand(nil),
 		},
-		{
-			Name:    "document-render-with-help",
-			CmdLine: "-h",
-			Cmd:     document.NewRenderCommand(nil),
-		},
 	}
 	for _, tt := range tests {
 		testutil.RunTest(t, tt)
