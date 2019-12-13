@@ -1,0 +1,14 @@
+name: Test Workflow
+on:
+  pull_request:
+    branches:
+      - master_down
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run Linter
+      run: make docker-image-lint
+    - name: Run Unit Tests
+      run: make docker-image-unit-tests
