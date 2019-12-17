@@ -16,22 +16,30 @@ limitations under the License.
 
 package plugins
 
-import "fmt"
-
-// ErrUnknownPlugin raised for unregistered plugins
-type ErrUnknownPlugin struct {
-	Kind string
-}
-
-func (e ErrUnknownPlugin) Error() string {
-	return fmt.Sprintf("Unknown airship plugin with Kind: %s", e.Kind)
-}
-
-// ErrRenderLoop is raised in case of template rendering loop
-type ErrRenderLoop struct {
-	Resource string
-}
-
-func (e ErrRenderLoop) Error() string {
-	return fmt.Sprintf("Render loop detected around %s", e.Resource)
+// ModifyHashStrings goes down the map recursively and tries
+// to apply function to each string
+func ModifyHashStrings(
+	doc interface{},
+	fn func(string) (string, error),
+) (interface{}, error) {
+	var err error
+	switch typeV := doc.(type) {
+	case map[string]interface{}:
+		for k, v := range typeV {
+			typeV[k], err = ModifyHashStrings(v, fn)
+			if err != nil {
+				return nil, err
+			}
+		}
+	case []interface{}:
+		for i, v := range typeV {
+			typeV[i], err = ModifyHashStrings(v, fn)
+			if err != nil {
+				return nil, err
+			}
+		}
+	case string:
+		return fn(typeV)
+	}
+	return doc, nil
 }

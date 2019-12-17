@@ -1,0 +1,4 @@
+resources:
+  - destination.yaml
+transformers:
+  - gotemplater.yaml

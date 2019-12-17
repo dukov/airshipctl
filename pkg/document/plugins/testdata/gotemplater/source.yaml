@@ -1,0 +1,11 @@
+
+apiVersion: apps/v2
+kind: Beef
+metadata:
+  name: dataSource
+spec:
+  someData:
+    test: data
+    test1: otherData
+    nestedTemplate: |
+      {{ getTreeByPath "apps_v1_MeatBall" "resourceToRender" "dataForNested" -}}
