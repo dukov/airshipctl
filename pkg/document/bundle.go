@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/kustomize/v3/pkg/target"
 	"sigs.k8s.io/kustomize/v3/pkg/types"
 
+	docplugins "opendev.org/airship/airshipctl/pkg/document/plugins"
 	utilyaml "opendev.org/airship/airshipctl/pkg/util/yaml"
 )
 
@@ -78,6 +79,7 @@ func NewBundle(fSys fs.FileSystem, kustomizePath string, outputPath string) (Bun
 
 	pluginConfig := plugins.DefaultPluginConfig()
 	pl := plugins.NewLoader(pluginConfig, rf)
+	plugins.TransformerFactories[plugins.Unknown] = docplugins.NewTransformerLoader
 
 	ldr, err := loader.NewLoader(
 		bundle.GetKustomizeBuildOptions().LoadRestrictor, v, bundle.GetKustomizeBuildOptions().KustomizationPath, fSys)
