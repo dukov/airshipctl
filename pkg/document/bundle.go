@@ -16,8 +16,13 @@ import (
 	"sigs.k8s.io/kustomize/v3/pkg/target"
 	"sigs.k8s.io/kustomize/v3/pkg/types"
 
+	docplugins "opendev.org/airship/airshipctl/pkg/document/plugins"
 	utilyaml "opendev.org/airship/airshipctl/pkg/util/yaml"
 )
+
+func init() {
+	plugins.TransformerFactories[plugins.Unknown] = docplugins.NewTransformerLoader
+}
 
 // KustomizeBuildOptions contain the options for running a Kustomize build on a bundle
 type KustomizeBuildOptions struct {
