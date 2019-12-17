@@ -1,0 +1,5 @@
+resources:
+  - source.yaml
+  - destination.yaml
+transformers:
+  - treeinserter.yaml
