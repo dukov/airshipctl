@@ -1,0 +1,6 @@
+apiVersion: apps/v1
+kind: MeatBall
+metadata:
+  name: resourceToRender
+data: |
+    {{ getTreeByPath "apps_v2_Beef" "dataSource" "spec.someData" -}}

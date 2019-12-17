@@ -9,7 +9,7 @@ import (
 	"opendev.org/airship/airshipctl/testutil"
 )
 
-func TestLoaderConfig(t *testing.T) {
+func TestLoader(t *testing.T) {
 	t.Run("Try load non-existent plugin", func(t *testing.T) {
 		_, err := document.NewBundle(testutil.SetupTestFs(t, "testdata/unknownplugin"), "/", "/")
 		assert.Error(t, err)
