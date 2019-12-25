@@ -3,7 +3,7 @@ package plugins
 import (
 	"bytes"
 	"fmt"
-	"html/template"
+	"text/template"
 
 	"sigs.k8s.io/kustomize/v3/pkg/gvk"
 	"sigs.k8s.io/kustomize/v3/pkg/ifc"
