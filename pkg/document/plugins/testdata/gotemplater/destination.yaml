@@ -4,3 +4,6 @@ metadata:
   name: resourceToRender
 data: |
     {{ getTreeByPath "apps_v2_Beef" "dataSource" "spec.someData" -}}
+dataForNested:
+  k1: key
+  k2: 1000
