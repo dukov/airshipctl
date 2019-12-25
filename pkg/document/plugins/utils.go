@@ -23,8 +23,6 @@ func ModifyHashStrings(
 			}
 		}
 	case string:
-		// TODO (dukov) Make this more generic to replace string with map or slice
-		// instead of just go-template rendering
 		return fn(typeV)
 	}
 	return doc, nil

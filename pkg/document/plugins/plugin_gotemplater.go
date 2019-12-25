@@ -2,6 +2,7 @@ package plugins
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 
 	"sigs.k8s.io/kustomize/v3/pkg/gvk"
@@ -19,6 +20,9 @@ func init() {
 type GoTemplater struct {
 	resid.ResId
 	resourceMap resmap.ResMap
+	renderPath  map[string]bool
+	currentGvkn string
+	rp          []string
 }
 
 // Config loads configuration from plugin config
@@ -31,8 +35,12 @@ func (gt *GoTemplater) Config(
 func (gt *GoTemplater) Transform(m resmap.ResMap) error {
 	gt.resourceMap = m
 	for _, r := range m.Resources() {
-		rm := r.Map()
-		_, err := ModifyHashStrings(rm, gt.renderString)
+		resource := r.Map()
+		rootResource := r.CurId().GvknString()
+		renderFunc := func(in string) (string, error) {
+			return gt.renderString(in, map[string]bool{rootResource: true})
+		}
+		_, err := ModifyHashStrings(resource, renderFunc)
 		if err != nil {
 			return err
 		}
@@ -45,10 +53,13 @@ func NewGoTemplaterPlugin() resmap.TransformerPlugin {
 	return &GoTemplater{}
 }
 
-func (gt *GoTemplater) renderString(in string) (string, error) {
+func (gt *GoTemplater) renderString(in string, renderPath map[string]bool) (string, error) {
+	getByPathWrap := func(rGVK, name, path string) (interface{}, error) {
+		return gt.getTreeByPath(rGVK, name, path, renderPath)
+	}
 	tmpl, err := template.New("tmpl").Funcs(
 		template.FuncMap{
-			"getTreeByPath": gt.getTreeByPath,
+			"getTreeByPath": getByPathWrap,
 		},
 	).Parse(in)
 	if err != nil {
@@ -63,20 +74,43 @@ func (gt *GoTemplater) renderString(in string) (string, error) {
 
 }
 
-func (gt *GoTemplater) getTreeByPath(resourceGVK, name, path string) (string, error) {
+func (gt *GoTemplater) getTreeByPath(resourceGVK, name, path string, renderPath map[string]bool) (interface{}, error) {
 	filterResID := resid.NewResId(gvk.FromString(resourceGVK), name)
+	renderPathEntry := fmt.Sprintf("%s|%s", filterResID.GvknString(), path)
+	if _, foud := renderPath[renderPathEntry]; foud {
+		return nil, RenderLoopError{Resource: filterResID.GvknString()}
+	}
+
 	res, err := gt.resourceMap.GetById(filterResID)
 	if err != nil {
 		return "", err
 	}
-	tree, err := res.GetFieldValue(path)
+	tgtField, err := res.GetFieldValue(path)
 	if err != nil {
 		return "", err
 	}
-	// TODO(dukov) check if value is go template and render it as well
-	result, err := yaml.Marshal(tree)
-	if err != nil {
-		return "", err
+	switch tgtType := tgtField.(type) {
+	case map[string]interface{}, []interface{}:
+		result, err := yaml.Marshal(tgtType)
+		if err != nil {
+			return "", err
+		}
+		renderPath = appendToPath(renderPath, renderPathEntry)
+		return gt.renderString(string(result), renderPath)
+
+	case string:
+		renderPath = appendToPath(renderPath, renderPathEntry)
+		return gt.renderString(tgtType, renderPath)
 	}
-	return string(result), nil
+	return tgtField, nil
+
+}
+
+func appendToPath(src map[string]bool, entry string) (res map[string]bool) {
+	res = make(map[string]bool)
+	for k, v := range src {
+		res[k] = v
+	}
+	res[entry] = true
+	return
 }

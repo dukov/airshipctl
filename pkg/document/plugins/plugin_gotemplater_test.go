@@ -21,15 +21,15 @@ func TestGotemplater(t *testing.T) {
 		var srcMap map[string]interface{}
 		var src []byte
 		resourceToRender, err = bundle.GetByName("resourceToRender")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		dataSource, err = bundle.GetByName("dataSource")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		renderString, err = resourceToRender.GetString("data")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		srcMap, err = dataSource.GetMap("spec.someData")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		src, err = yaml.Marshal(srcMap)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		assert.Equal(t, string(src), renderString)
 	})
