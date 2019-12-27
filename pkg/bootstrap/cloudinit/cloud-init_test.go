@@ -17,22 +17,22 @@ func TestGetCloudData(t *testing.T) {
 	require.NoError(t, err, "Building Bundle Failed")
 
 	tests := []struct {
-		ann              string
+		label            string
 		expectedUserData []byte
 		expectedNetData  []byte
 		expectedErr      error
 	}{
 		{
-			ann:              "test=test",
+			label:            "test=test",
 			expectedUserData: nil,
 			expectedNetData:  nil,
 			expectedErr: document.ErrDocNotFound{
-				Annotation: "test=test",
-				Kind:       "Secret",
+				Label: "test=test",
+				Kind:  "Secret",
 			},
 		},
 		{
-			ann:              "airshipit.org/clustertype=nodata",
+			label:            "airshipit.org/stage=nodata",
 			expectedUserData: nil,
 			expectedNetData:  nil,
 			expectedErr: ErrDataNotSupplied{
@@ -41,7 +41,7 @@ func TestGetCloudData(t *testing.T) {
 			},
 		},
 		{
-			ann:              "test=nodataforcfg",
+			label:            "test=nodataforcfg",
 			expectedUserData: nil,
 			expectedNetData:  nil,
 			expectedErr: ErrDataNotSupplied{
@@ -50,7 +50,7 @@ func TestGetCloudData(t *testing.T) {
 			},
 		},
 		{
-			ann:              "airshipit.org/clustertype=ephemeral",
+			label:            "airshipit.org/stage=isogen",
 			expectedUserData: []byte("cloud-init"),
 			expectedNetData:  []byte("netconfig\n"),
 			expectedErr:      nil,
@@ -58,7 +58,7 @@ func TestGetCloudData(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		actualUserData, actualNetData, actualErr := GetCloudData(bundle, tt.ann)
+		actualUserData, actualNetData, actualErr := GetCloudData(bundle, tt.label)
 
 		assert.Equal(t, tt.expectedUserData, actualUserData)
 		assert.Equal(t, tt.expectedNetData, actualNetData)

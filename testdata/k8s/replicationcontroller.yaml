@@ -3,11 +3,9 @@ kind: ReplicationController
 metadata:
   name: test-rc
   namespace: test
-  annotations:
-    airshipit.org/initinfra: "workflow"
   labels:
     name: test-rc
-    airshipit.org/initinfra: "workflow"
+    airshipit.org/stage: "initinfra"
 spec:
   replicas: 1
   template:

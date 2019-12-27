@@ -10,7 +10,7 @@ import (
 
 const (
 	// TODO this should be part of a airshipctl config
-	EphemeralClusterAnnotation = "airshipit.org/clustertype=ephemeral"
+	EphemeralClusterLabel = "airshipit.org/stage=isogen"
 )
 
 // Settings settings for isogen command
