@@ -30,7 +30,7 @@ func TestApply(t *testing.T) {
 	ao.DryRun = true
 
 	b := testutil.NewTestBundle(t, fixtureDir)
-	docs, err := b.GetByAnnotation("airshipit.org/initinfra")
+	docs, err := b.GetByLabel("airshipit.org/stage=initinfra")
 	require.NoError(t, err, "failed to get documents from bundle")
 
 	tests := []struct {

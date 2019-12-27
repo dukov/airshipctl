@@ -19,10 +19,8 @@ const (
 		airshipctl cluster initinfra`)
 
 	// Annotations
-	airshipBase         = "airshipit.org"
-	initinfraAnnotation = airshipBase + "/" + "initinfra"
-	deployedByLabel     = airshipBase + "/" + "deployed"
-	initinfraIdentifier = "initinfra"
+	airshipBase    = "airshipit.org"
+	initInfraLabel = airshipBase + "/" + "stage=initinfra"
 )
 
 // Infra is an abstraction used to initialize base infrastructure
@@ -60,10 +58,11 @@ func (infra *Infra) Deploy() error {
 	of := "json"
 	ao.PrintFlags.OutputFormat = &of
 	ao.DryRun = infra.DryRun
+
 	// If prune is true, set selector for purning
 	if infra.Prune {
 		ao.Prune = infra.Prune
-		ao.Selector = deployedByLabel + "=" + initinfraIdentifier
+		ao.Selector = initInfraLabel
 	}
 
 	// TODO (kkalynovskyi) Fix this when config module will provide path to bundle directory.
@@ -74,24 +73,9 @@ func (infra *Infra) Deploy() error {
 	}
 
 	// Get documents that are annotated to belong to initinfra
-	docs, err := b.GetByAnnotation(initinfraAnnotation)
+	docs, err := b.GetByLabel(initInfraLabel)
 	if err != nil {
 		return err
-	}
-
-	// Label every document indicating that it was deployed by initinfra module for further reference
-	// This may be used later to get all resources that are part of initinfra module, for monitoring, alerting
-	// upgrading etc...
-	// also if prune is set to true, this fulfills requirement for all labeled document to be labeled.
-	// Pruning by annotation is not available, therefore we need to use label.
-	for _, doc := range docs {
-
-		res := doc.GetKustomizeResource()
-		labels := res.GetLabels()
-		labels[deployedByLabel] = initinfraIdentifier
-		res.SetLabels(labels)
-		doc.SetKustomizeResource(&res)
-
 	}
 
 	return infra.Apply(docs, ao)

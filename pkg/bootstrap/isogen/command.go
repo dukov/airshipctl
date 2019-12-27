@@ -110,14 +110,14 @@ func verifyArtifacts(cfg *Config) error {
 }
 
 func generateBootstrapIso(
-	docBubdle document.Bundle,
+	docBundle document.Bundle,
 	builder container.Container,
 	cfg *Config,
 	debug bool,
 ) error {
 	cntVol := strings.Split(cfg.Container.Volume, ":")[1]
 	log.Print("Creating cloud-init for ephemeral K8s")
-	userData, netConf, err := cloudinit.GetCloudData(docBubdle, EphemeralClusterAnnotation)
+	userData, netConf, err := cloudinit.GetCloudData(docBundle, EphemeralClusterLabel)
 	if err != nil {
 		return err
 	}
