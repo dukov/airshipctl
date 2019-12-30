@@ -91,11 +91,24 @@ func (gt *GoTemplater) getTreeByPath(resourceGVK, name, path string, renderPath 
 	}
 	switch tgtType := tgtField.(type) {
 	case map[string]interface{}, []interface{}:
+		renderPath = appendToPath(renderPath, renderPathEntry)
+		renderF := func(in string) (string, error) {
+			return gt.renderString(in, renderPath)
+		}
+
+		// NOTE Dig deeper recurcively to render array/map strings.
+		// This is needed since yaml.Marshal splits long strings (at
+		// least in case string contains curly braces) into multimple
+		// lines which may cause go template parse errors
+		_, err := ModifyHashStrings(tgtType, renderF)
+		if err != nil {
+			return "", err
+		}
+
 		result, err := yaml.Marshal(tgtType)
 		if err != nil {
 			return "", err
 		}
-		renderPath = appendToPath(renderPath, renderPathEntry)
 		return gt.renderString(string(result), renderPath)
 
 	case string:
