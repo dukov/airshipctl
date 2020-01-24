@@ -84,6 +84,16 @@ func TestBundleDocumentFiltering(t *testing.T) {
 		assert.Len(docs, 1, "SelectLabels returned wrong number of resources")
 	})
 
+	t.Run("GetByFieldValue", func(t *testing.T) {
+		// Find documents with a particular value referenced by JSON path
+		filter := func(val interface{}) bool { return val == "01:3b:8b:0c:ec:8b" }
+		filteredBundle, err := bundle.GetByFieldValue("spec.bootMACAddress", filter)
+		require.NoError(err, "Error trying to filter resources")
+		docs, err := filteredBundle.GetAllDocuments()
+		require.NoError(err)
+		assert.Len(docs, 1, "SelectLabels returned wrong number of resources")
+	})
+
 	t.Run("Write", func(t *testing.T) {
 		// Ensure we can write out a bundle
 		//

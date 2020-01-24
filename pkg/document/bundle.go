@@ -1,6 +1,7 @@
 package document
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
@@ -51,6 +52,7 @@ type Bundle interface {
 	SetKustomizeBuildOptions(KustomizeBuildOptions) error
 	SetFileSystem(fs.FileSystem) error
 	GetFileSystem() fs.FileSystem
+	GetByFieldValue(string, func(interface{}) bool) (Bundle, error)
 	Select(selector types.Selector) ([]Document, error)
 	GetByGvk(string, string, string) ([]Document, error)
 	GetByName(string) (Document, error)
@@ -186,6 +188,84 @@ func (b *BundleFactory) GetByName(name string) (Document, error) {
 	default:
 		return NewDocument(resSet[0])
 	}
+}
+
+// GetByFieldValue returns new Bundle with filtered resource documents.
+// Method iterates over all resources in the bundle. If resource has field
+// (i.e. key) specified in JSON path, and the comparison function returns
+// 'true' for value referenced by JSON path, then resource is added to
+// resulting bundle.
+// Example:
+// The bundle contains 3 documents
+//
+//     ---
+//     apiVersion: v1
+//     kind: DocKind1
+//     metadata:
+//       name: doc1
+//     spec:
+//       somekey:
+//         somefield: "someValue"
+//     ---
+//     apiVersion: v1
+//     kind: DocKind2
+//     metadata:
+//       name: doc2
+//     spec:
+//       somekey:
+//         somefield: "someValue"
+//     ---
+//     apiVersion: v1
+//     kind: DocKind1
+//     metadata:
+//       name: doc3
+//     spec:
+//       somekey:
+//         somefield: "someOtherValue"
+//
+// Execution of bundleInstance.FilterByFieldValue(
+//		"spec.somekey.somefield",
+//		func(v interface{}) { return v == "someValue" })
+// will return a new Bundle instance containing 2 documents:
+//     ---
+//     apiVersion: v1
+//     kind: DocKind1
+//     metadata:
+//       name: doc1
+//     spec:
+//       somekey:
+//         somefield: "someValue"
+//     ---
+//     apiVersion: v1
+//     kind: DocKind2
+//     metadata:
+//       name: doc2
+//     spec:
+//       somekey:
+//         somefield: "someValue"
+func (b *BundleFactory) GetByFieldValue(path string, condition func(interface{}) bool) (Bundle, error) {
+	result := &BundleFactory{
+		KustomizeBuildOptions: b.KustomizeBuildOptions,
+		FileSystem:            b.FileSystem,
+	}
+	resourceMap := resmap.New()
+	for _, res := range b.Resources() {
+		val, err := res.GetFieldValue(path)
+		if err == nil && condition(val) {
+			if err = resourceMap.Append(res); err != nil {
+				return nil, err
+			}
+		}
+
+		if err != nil && !errors.As(err, &types.NoFieldError{Field: path}) {
+			return nil, err
+		}
+	}
+
+	if err := result.SetKustomizeResourceMap(resourceMap); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // Select offers a direct interface to pass a Kustomize Selector to the bundle
